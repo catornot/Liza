@@ -1,4 +1,4 @@
-from discord import Embed, File, Color, User
+from discord import Embed, File, Color, User, TextChannel
 from discord.ext import commands
 from os import walk
 from random import choice
@@ -14,11 +14,10 @@ class Trol(commands.Cog):
         return False
     
     async def RejectTrol( self, ctx ):
-        await ctx.send( f"{ctx.mention} nah", delete_after = 0.5 )
-        sleep( 0.5 )
+        await ctx.send( f"{ctx.mention} nah", delete_after = 1 )
         await ctx.message.delete()
 
-    @commands.command( name = "liza", description="Massive trol" )
+    @commands.command( name = "liza" )
     async def liza( self, ctx, *args ):
 
         if ( not self.CanTrol( ctx ) ):
@@ -33,7 +32,7 @@ class Trol(commands.Cog):
         
         await ctx.send( message )
     
-    @commands.command( name = "trol", description="Small trol" )
+    @commands.command( name = "trol" )
     async def trol( self, ctx ):
 
         if ( not self.CanTrol( ctx ) ):
@@ -52,7 +51,7 @@ class Trol(commands.Cog):
         await ctx.message.delete()
         await ctx.send( file = image )
 
-    @commands.command( name ="fakeban", description="ban someone" )
+    @commands.command( name ="fakeban" )
     async def fakeban( self, ctx, target : User, reason : str ):
 
         if ( not self.CanTrol( ctx ) ):
@@ -60,5 +59,18 @@ class Trol(commands.Cog):
             return
         
         embed = Embed( title = f"Banned {target.display_name}", colour = Color.magenta(), description = f"{target.display_name} was banned for {reason}" )
-
+        
+        await ctx.message.delete()
         await ctx.send ( embed = embed )
+
+channel_id = 1004076238626902117
+
+class Talk(commands.Cog):
+    
+    @commands.Cog.listener()
+    async def on_command_error( ctx, error ):
+        await ctx.send( error )
+
+    @commands.command( name = "target" )
+    async def target( self, ctx, target : TextChannel ):
+        pass
