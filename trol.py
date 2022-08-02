@@ -1,4 +1,4 @@
-from discord import Embed, File, Color
+from discord import Embed, File, Color, User
 from discord.ext import commands
 from os import walk
 from random import choice
@@ -14,11 +14,11 @@ class Trol(commands.Cog):
         return False
     
     async def RejectTrol( self, ctx ):
-        await ctx.send( "<@{}> nah".format( ctx.author.id  ), delete_after = 0.5 )
+        await ctx.send( f"{ctx.mention} nah", delete_after = 0.5 )
         sleep( 0.5 )
         await ctx.message.delete()
 
-    @commands.command( name = "liza" )
+    @commands.command( name = "liza", description="Massive trol" )
     async def liza( self, ctx, *args ):
 
         if ( not self.CanTrol( ctx ) ):
@@ -33,7 +33,7 @@ class Trol(commands.Cog):
         
         await ctx.send( message )
     
-    @commands.command( name = "trol" )
+    @commands.command( name = "trol", description="Small trol" )
     async def trol( self, ctx ):
 
         if ( not self.CanTrol( ctx ) ):
@@ -51,3 +51,14 @@ class Trol(commands.Cog):
         
         await ctx.message.delete()
         await ctx.send( file = image )
+
+    @commands.command( name ="fakeban", description="ban someone" )
+    async def fakeban( self, ctx, target : User, reason : str ):
+
+        if ( not self.CanTrol( ctx ) ):
+            await self.RejectTrol( ctx )
+            return
+        
+        embed = Embed( title = f"Banned {target.display_name}", colour = Color.magenta(), description = f"{target.display_name} was banned for {reason}" )
+
+        await ctx.send ( embed = embed )
