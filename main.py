@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from trol import Trol
+from trol import Trol, Talk
 from events import Adventure
 from funny import Cat
 
@@ -20,6 +20,7 @@ async def on_ready():
 
 # adding cogs
 bot.add_cog( Trol( bot ) )
+bot.add_cog( Talk( bot ) )
 # bot.add_cog( Adventure( bot ) )
 bot.add_cog( Cat( bot ) )
 

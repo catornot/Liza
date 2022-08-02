@@ -1,6 +1,8 @@
 from discord.ext import commands
 from discord import Embed, File
 from random import choice
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 import requests
 
 CTAs = [ 
@@ -16,9 +18,35 @@ class Cat(commands.Cog):
     @commands.command( name = "cta" )
     async def cta( self, ctx ):
         await ctx.send( choice( CTAs ) )
+    
+    async def cat_title( self, ctx, url, *args ):
+
+        message = ""
+        for arg in args:
+            message += " " + arg
+        
+        r = requests.get( url )
+
+        if r.status_code == 200:
+            img = Image.open(BytesIO(r.content))
+
+            draw = ImageDraw.Draw(img)
+
+            fnt = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
+
+            draw.text( (img.size[0] * 0.5, img.size[1] * 0.15), message, font = fnt( 255, 255, 255 ) )
+            img.save( "pics/cat.png" )
+        else:
+            await ctx.send( f"https://http.cat/{r.status_code}" )
+            return
+        
+        with open( "pics/cat.png" , 'rb' ) as file:
+            image = image = File( file, f"cat.png" )
+        
+        await ctx.send( file = image )
 
     @commands.command( name = "cat" )
-    async def cat( self, ctx, *args ):
+    async def cat( self, ctx, *args:list ):
         
         end = "png"
         url = "https://cataas.com/cat"
@@ -28,6 +56,10 @@ class Cat(commands.Cog):
                 case "gif":
                     end = "gif"
                     url = "https://cataas.com/cat/gif"
+                case "title":
+                    args.pop(0)
+                    await self.cat_title( ctx, url, args )
+                    return
                     
 
         r = requests.get( url )
@@ -36,6 +68,9 @@ class Cat(commands.Cog):
             with open( f"pics/cat.{end}" , 'wb' ) as file:
                 for chunk in r:
                     file.write( chunk )
+        else:
+            await ctx.send( f"https://http.cat/{r.status_code}" )
+            return
         
         with open( f"pics/cat.{end}" , 'rb' ) as file:
             image = image = File( file, f"cat.{end}" )
