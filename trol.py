@@ -1,4 +1,4 @@
-from discord import Embed, File, Color, User, TextChannel, DMChannel, Message, HTTPException
+from discord import Embed, File, Color, User, TextChannel, DMChannel, Message, HTTPException, PartialEmoji
 from discord.ext import commands
 from os import walk
 from random import choice
@@ -7,6 +7,9 @@ from time import sleep
 whitelist = [ 645370715922497589, 625796609804075070 ]
 
 class Trol(commands.Cog):
+
+    def __init__(self, bot):
+        self.bot = bot
 
     def CanTrol( self, ctx ):
         if ( ctx.author.id in whitelist ):
@@ -28,9 +31,50 @@ class Trol(commands.Cog):
         for arg in args:
             message += " " + arg
         
-        await ctx.channel.purge(limit=1)
-        
+        await ctx.message.delete()
         await ctx.send( message )
+    
+    @commands.command( name = "embed" )
+    async def embed( self, ctx, *args ):
+
+        if ( not self.CanTrol( ctx ) ):
+            await self.RejectTrol( ctx )
+            return
+        
+        message = ""
+        for arg in args:
+            message += " " + arg
+        
+        description = ""
+        fields = {}
+        title = ""
+        
+        stuff = message.split("|")
+        for things in stuff :
+
+            if ( things.startswith( "description" ) ):
+                description = things[12:]
+            # elif ( things.startswith( "field" ) ):
+            #     fields["a"] = things[5:]
+            if ( things.startswith( "title" ) ):
+                title = things[5:]
+        
+        embed = Embed( title = title, description = description )
+        
+        await ctx.message.delete()
+        await ctx.send( embed = embed )
+    
+    @commands.command( name = "react" )
+    async def react( self, ctx, id:int, emoji:str ):
+
+        if ( not self.CanTrol( ctx ) ):
+            await self.RejectTrol( ctx )
+            return
+
+        message = ctx.channel.get_partial_message( id )
+        
+        await ctx.message.delete()
+        await message.add_reaction( emoji )
     
     @commands.command( name = "trol" )
     async def trol( self, ctx ):
@@ -94,7 +138,7 @@ class Talk(commands.Cog):
 
         elif( isinstance( message.channel, DMChannel ) ):
             with open( "dms.txt", "a" ) as file:
-                file.write( f"{message.author.display_name}:{message.content}\n" )
+                file.write( f"{message.author.display_name}:;:{message.created_at}:;:{message.content}\n" )
 
 
     @commands.command( name = "notarget" )
@@ -124,17 +168,21 @@ class Talk(commands.Cog):
         
         messages = messages.split("\n")
         
-        embed = Embed( title = f"{user.display_name}'s dms with me" )
+        embed = Embed( title = f"{user.display_name}'s dms" )
         
         for message in messages:
         
             if ( message == "" ):
                 continue
 
-            name, text = message.split(":")
+            name, time, text = message.split(":;:") # links break this
 
             if ( user.display_name == name ):
-                embed.add_field( name = "🟢", value = text, inline = False )
+                embed.add_field( name = time, value = text, inline = False )
+        
+        if ( embed.fields == [] ):
+            await ctx.send( "no dms :skull:" )
+            return
         
         await ctx.send( embed = embed )
     
@@ -157,7 +205,7 @@ class Talk(commands.Cog):
             if ( message == "" ):
                 continue
 
-            if ( user.display_name == message.split(":")[0] ):
+            if ( user.display_name == message.split(":;:")[0] ):
                 continue
             
             new_messages = f"{new_messages}\n{message}"
