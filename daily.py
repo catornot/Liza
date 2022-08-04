@@ -5,7 +5,7 @@ import json
 import requests
 
 day = 86400
-wait_time = 900
+wait_time = 3600
 
 def load_data():
     with open( "daily_data.json", "r" ) as file:

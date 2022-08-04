@@ -63,6 +63,27 @@ class Cat(commands.Cog):
             image = image = File( file, f"cat.png" )
         
         await ctx.send( file = image )
+    
+    async def cat_movie( self, ctx, url ):
+        
+        r = requests.get( url )
+
+        if r.status_code == 200:
+            
+            with open( f"pics/cat.{end}" , 'wb' ) as file:
+                for chunk in r:
+                    file.write( chunk )
+
+            img = Image.open(BytesIO(r.content))
+            img.save( "pics/cat." )
+        else:
+            await ctx.send( f"https://http.cat/{r.status_code}" )
+            return
+        
+        with open( "pics/cat.png" , 'rb' ) as file:
+            image = image = File( file, f"cat.png" )
+        
+        await ctx.send( file = image )
 
     @commands.command( name = "cat" )
     async def cat( self, ctx, *args ):
@@ -80,22 +101,18 @@ class Cat(commands.Cog):
                     args.pop(0)
                     await self.cat_title( ctx, url, args )
                     return
+                case "movie":
+                    await self.cat_movie( ctx, url )
+                    return
                     
-
         r = requests.get( url )
         
         if r.status_code == 200:
-            with open( f"pics/cat.{end}" , 'wb' ) as file:
-                for chunk in r:
-                    file.write( chunk )
+            image = File( BytesIO(r.content), f"cat.{end}" )
+            await ctx.send( file = image )
         else:
             await ctx.send( f"https://http.cat/{r.status_code}" )
             return
-        
-        with open( f"pics/cat.{end}" , 'rb' ) as file:
-            image = image = File( file, f"cat.{end}" )
-        
-        await ctx.send( file = image )
         
 
         
