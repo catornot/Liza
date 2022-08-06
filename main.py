@@ -17,8 +17,8 @@ bot = commands.Bot( command_prefix = "?", intents=discord_intents)
 async def on_ready():
     print(f"{bot.user} is ready and online!")
     await bot.change_presence(
-        status=discord.Status.online,
-        activity=discord.Game( "Titanfall 2" )
+        status = discord.Status.online,
+        activity = discord.Game( "Titanfall 2" )
     )
 
 # adding cogs

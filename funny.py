@@ -4,6 +4,9 @@ from random import choice
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import requests
+import moviepy.editor as mp
+import moviepy
+import os
 
 CTAs = [ 
     "https://cdn.discordapp.com/attachments/920776187884732559/1003376008486977626/cta_cute.mp4",
@@ -23,7 +26,9 @@ CTAs = [
     "https://cdn.discordapp.com/attachments/920776187884732559/1003376701495062698/cat_real_or_fake.mp4",
     "https://cdn.discordapp.com/attachments/920776187884732559/1003376756494975006/music_cta.mp4",
     "https://cdn.discordapp.com/attachments/920776187884732559/1003376756868264116/ctamf.mp4",
-    "https://cdn.discordapp.com/attachments/920776187884732559/1003376757174456320/cta.mp4"
+    "https://cdn.discordapp.com/attachments/920776187884732559/1003376757174456320/cta.mp4",
+    "https://cdn.discordapp.com/attachments/1004446607762280491/1004858314712174653/MemeFeedBot_6-1.mp4",
+    "https://cdn.discordapp.com/attachments/987730053439827998/1005539542830428180/rcYZgTyNUOCP42JW.mp4"
 ]
 
 class Cat(commands.Cog):
@@ -60,30 +65,43 @@ class Cat(commands.Cog):
             return
         
         with open( "pics/cat.png" , 'rb' ) as file:
-            image = image = File( file, f"cat.png" )
+            image = File( file, f"cat.png" )
         
         await ctx.send( file = image )
     
-    async def cat_movie( self, ctx, url ):
+    async def cat_movie( self, ctx, url, args ):
         
         r = requests.get( url )
 
-        if r.status_code == 200:
-            
-            with open( f"pics/cat.{end}" , 'wb' ) as file:
-                for chunk in r:
-                    file.write( chunk )
-
-            img = Image.open(BytesIO(r.content))
-            img.save( "pics/cat." )
-        else:
+        if r.status_code != 200:
             await ctx.send( f"https://http.cat/{r.status_code}" )
             return
         
-        with open( "pics/cat.png" , 'rb' ) as file:
-            image = image = File( file, f"cat.png" )
+        async with ctx.channel.typing():
+            with open( "pics/cat.gif" , 'wb' ) as file:
+                for chunk in r:
+                    file.write( chunk )
+            
+            clip = mp.VideoFileClip( "pics/cat.gif" )
+            clip.resize( width = 240 )
+
+            entries = os.listdir( "funny_sounds/" )
+            
+            audio = mp.AudioFileClip( f"funny_sounds/{choice(entries) }"  )
+
+            if ( audio.duration > clip.duration and "cut" in args ):
+                audio = audio.cutout( clip.duration, audio.duration )
+
+            clip = clip.set_audio( audio )
+            
+            clip.write_videofile( "pics/cat.mp4" )
+            clip.close()
+            audio.close()
+
+            vid = File( "pics/cat.mp4", "cat.mp4" )
         
-        await ctx.send( file = image )
+            await ctx.send( file = vid )
+            
 
     @commands.command( name = "cat" )
     async def cat( self, ctx, *args ):
@@ -99,11 +117,18 @@ class Cat(commands.Cog):
                 case "title":
                     args = list( args )
                     args.pop(0)
-                    await self.cat_title( ctx, url, args )
-                    return
+                    message = ""
+                    for arg in args:
+                        message += " " + arg
+                    url = f"https://cataas.com/cat/says/{message}"
                 case "movie":
-                    await self.cat_movie( ctx, url )
+                    args = list( args )
+                    args.pop(0)
+                    url = "https://cataas.com/cat/gif"
+                    await self.cat_movie( ctx, url, args )
                     return
+                case "tag":
+                    url = f"https://cataas.com/cat/{args[1]}"
                     
         r = requests.get( url )
         
@@ -112,7 +137,6 @@ class Cat(commands.Cog):
             await ctx.send( file = image )
         else:
             await ctx.send( f"https://http.cat/{r.status_code}" )
-            return
         
 
         
