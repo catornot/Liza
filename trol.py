@@ -1,3 +1,4 @@
+import json
 from discord import Embed, File, Color, User, TextChannel, DMChannel, Message, HTTPException, PartialEmoji
 from discord.ext import commands
 from os import walk
@@ -11,6 +12,16 @@ class Trol(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+        try:
+            with open( "banned_words.json", "r" ) as file:
+                self.banned_words = json.loads( file.read() )
+        except:
+            with open( "banned_words.json", "w" ) as file:
+                file.write( json.dumps( {"banned": []}, indent=4 ) )
+            
+        with open( "banned_words.json", "r" ) as file:
+            self.banned_words = json.loads( file.read() )
+
     def CanTrol( self, ctx ):
         if ( ctx.author.id in whitelist ):
             return True
@@ -19,6 +30,53 @@ class Trol(commands.Cog):
     async def RejectTrol( self, ctx ):
         await ctx.send( f"{ctx.mention} nah", delete_after = 1 )
         await ctx.message.delete()
+    
+    @commands.Cog.listener()
+    async def on_message( self, message: Message ):
+        content = message.content
+
+        if ( self.CanTrol( message ) ):
+            return
+
+        for word in self.banned_words["banned"]:
+            if word in content.lower():
+                await message.channel.send( f"{message.author.mention} nah", delete_after = 2 )
+                await message.delete( delay=0.5 )
+    
+    @commands.command( name = "reload_banned" )
+    async def reload_banned( self, ctx, *args ):
+        if ( not self.CanTrol( ctx ) ):
+            await self.RejectTrol( ctx )
+            return
+
+        
+
+        with open( "banned_words.json", "r" ) as file:
+            self.banned_words = json.loads( file.read() )
+        
+        embed = Embed( title = "banned words" )
+        embed.add_field( name = "task", value = "reload banned words" )
+        
+        await ctx.send( embed = embed )
+    
+    @commands.command( name = "add_banned" )
+    async def add_banned( self, ctx, *args ):
+        if ( not self.CanTrol( ctx ) ):
+            await self.RejectTrol( ctx )
+            return
+        
+        word = args[0]
+
+        embed = Embed( title = "banned words" )
+        embed.add_field( name = "task", value = f"added {word}" )
+        
+        await ctx.send( embed = embed )
+
+        self.banned_words["banned"].append(word)
+
+        with open( "banned_words.json", "w" ) as file:
+            file.write( json.dumps( self.banned_words, indent=4 ) )
+        
 
     @commands.command( name = "liza" )
     async def liza( self, ctx, *args ):
@@ -115,7 +173,7 @@ class Talk(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
+        
     @commands.Cog.listener()
     async def on_command_error( self, ctx, error ):
         

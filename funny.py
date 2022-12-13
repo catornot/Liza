@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord import Embed, File
+from discord import Embed, File, User
 from random import choice
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
@@ -28,7 +28,8 @@ CTAs = [
     "https://cdn.discordapp.com/attachments/920776187884732559/1003376756868264116/ctamf.mp4",
     "https://cdn.discordapp.com/attachments/920776187884732559/1003376757174456320/cta.mp4",
     "https://cdn.discordapp.com/attachments/1004446607762280491/1004858314712174653/MemeFeedBot_6-1.mp4",
-    "https://cdn.discordapp.com/attachments/987730053439827998/1005539542830428180/rcYZgTyNUOCP42JW.mp4"
+    "https://cdn.discordapp.com/attachments/987730053439827998/1005539542830428180/rcYZgTyNUOCP42JW.mp4",
+    "https://cdn.discordapp.com/attachments/951461326478262292/1007066855854329997/cta.mp4"
 ]
 
 class Cat(commands.Cog):
@@ -129,6 +130,8 @@ class Cat(commands.Cog):
                     return
                 case "tag":
                     url = f"https://cataas.com/cat/{args[1]}"
+                case "new":
+                    url = f"https://thiscatdoesnotexist.com/"
                     
         r = requests.get( url )
         
@@ -137,6 +140,12 @@ class Cat(commands.Cog):
             await ctx.send( file = image )
         else:
             await ctx.send( f"https://http.cat/{r.status_code}" )
+    
+    @commands.command( name = "age" )
+    async def age( self, ctx, target : User ):
+        await ctx.send( target.created_at )
         
 
+# TODO: https://thiscatdoesnotexist.com/
+# video montage with these cats
         
